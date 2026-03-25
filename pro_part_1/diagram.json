@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "author": "Uri Shaked",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 14.3,
+      "left": -5,
+      "attrs": { "env": "micropython-20220618-v1.19.1" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 54,
+      "left": 128.6,
+      "attrs": { "color": "red", "flip": "1" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 129.6,
+      "left": 124.25,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
+    },
+    { "type": "wokwi-dht22", "id": "dht1", "top": -57.3, "left": 215.4, "attrs": {} },
+    { "type": "wokwi-pir-motion-sensor", "id": "pir1", "top": 119.2, "left": 261.42, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc1", "top": 221.56, "left": 163.2, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX0", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX0", "$serialMonitor:TX", "", [] ],
+    [ "led1:A", "esp:D15", "green", [ "v0" ] ],
+    [ "led1:C", "r1:1", "black", [ "v0" ] ],
+    [ "esp:GND.1", "r1:2", "black", [ "h0" ] ],
+    [ "dht1:SDA", "esp:D4", "yellow", [ "v0" ] ],
+    [ "dht1:GND", "esp:GND.1", "black", [ "v0" ] ],
+    [ "pir1:OUT", "esp:D13", "yellow", [ "v57.6", "h-115.34", "v0", "h-240", "v-172.8" ] ],
+    [ "pir1:GND", "esp:GND.1", "black", [ "v28.8", "h-125.06", "v-76.8" ] ],
+    [ "pir1:VCC", "vcc1:VCC", "purple", [ "v0" ] ],
+    [ "dht1:VCC", "esp:VIN", "red", [ "v240", "h-259.2", "v-124.8" ] ]
+  ],
+  "dependencies": {}
+}
