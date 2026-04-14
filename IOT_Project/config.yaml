@@ -2,21 +2,27 @@ simulation:
   building_id: "b01"
   floors: 10
   rooms_per_floor: 20
-  tick_interval: 10 # increased for initial stability
-  sync_interval: 30 # Sync to SQLite every 30s
-  max_jitter: 60    # Spread 200 connections over 60s
+  mqtt_rooms_per_floor: 10 # First 10 rooms
+  coap_rooms_per_floor: 10 # Next 10 rooms
+  tick_interval: 10
+  sync_interval: 30
+  max_jitter: 60
   outside_temp: 35.0
 
 physics:
-  alpha: 0.01       # Insulation Constant (Thermal Leakage)
-  beta: 0.2         # HVAC Strength
-  occ_temp_boost: 0.1 # Occupancy increases temp slightly
+  alpha: 0.01
+  beta: 0.2
+  occ_temp_boost: 0.1
   light_threshold: 400
 
 mqtt:
-  broker: "broker.emqx.io" # UPDATED: Changed from localhost to EMQX broker for easier testing if user doesn't have a local one.
+  broker: "broker.emqx.io" # HiveMQ container unavailable locally
   port: 1883
   base_topic: "campus"
 
+coap:
+  base_port: 5683 # We will increment port per room if needed, though they could share if we use path routing, but aiocoap binds to UDP port. Let's say we assign CoAP port = 50000 + (floor * 100) + room.
+
 faults:
-  probability: 0.05 # 5% chance of a fault event per tick
+  probability: 0.05
+

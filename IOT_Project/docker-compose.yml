@@ -1,0 +1,128 @@
+version: '3'
+services:
+  hivemq:
+    image: hivemq/hivemq-ce:latest
+    container_name: hivemq
+    ports:
+      - "1883:1883"
+      - "8080:8080"
+    volumes:
+      - ./hivemq-conf:/opt/hivemq/conf
+    networks:
+      - iot_net
+
+  thingsboard:
+    image: thingsboard/tb-postgres
+    container_name: thingsboard
+    ports:
+      - "8081:8080"
+      - "1884:1883"
+    environment:
+      - TB_QUEUE_TYPE=in-memory
+      - DATABASE_LOG_THRESHOLD_MS=1000
+    networks:
+      - iot_net
+
+  gateway-f01:
+    image: nodered/node-red:latest
+    container_name: gateway-f01
+    ports:
+      - "1881:1880"
+    volumes:
+      - ./flows/f01:/data
+    networks:
+      - iot_net
+
+  gateway-f02:
+    image: nodered/node-red:latest
+    container_name: gateway-f02
+    ports:
+      - "1882:1880"
+    volumes:
+      - ./flows/f02:/data
+    networks:
+      - iot_net
+
+  gateway-f03:
+    image: nodered/node-red:latest
+    container_name: gateway-f03
+    ports:
+      - "1885:1880"
+    volumes:
+      - ./flows/f03:/data
+    networks:
+      - iot_net
+
+  gateway-f04:
+    image: nodered/node-red:latest
+    container_name: gateway-f04
+    ports:
+      - "1886:1880"
+    volumes:
+      - ./flows/f04:/data
+    networks:
+      - iot_net
+
+  gateway-f05:
+    image: nodered/node-red:latest
+    container_name: gateway-f05
+    ports:
+      - "1887:1880"
+    volumes:
+      - ./flows/f05:/data
+    networks:
+      - iot_net
+
+  gateway-f06:
+    image: nodered/node-red:latest
+    container_name: gateway-f06
+    ports:
+      - "1888:1880"
+    volumes:
+      - ./flows/f06:/data
+    networks:
+      - iot_net
+
+  gateway-f07:
+    image: nodered/node-red:latest
+    container_name: gateway-f07
+    ports:
+      - "1889:1880"
+    volumes:
+      - ./flows/f07:/data
+    networks:
+      - iot_net
+
+  gateway-f08:
+    image: nodered/node-red:latest
+    container_name: gateway-f08
+    ports:
+      - "1890:1880"
+    volumes:
+      - ./flows/f08:/data
+    networks:
+      - iot_net
+
+  gateway-f09:
+    image: nodered/node-red:latest
+    container_name: gateway-f09
+    ports:
+      - "1891:1880"
+    volumes:
+      - ./flows/f09:/data
+    networks:
+      - iot_net
+
+  gateway-f10:
+    image: nodered/node-red:latest
+    container_name: gateway-f10
+    ports:
+      - "1892:1880"
+    volumes:
+      - ./flows/f10:/data
+    networks:
+      - iot_net
+
+networks:
+  iot_net:
+    driver: bridge

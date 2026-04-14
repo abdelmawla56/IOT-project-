@@ -1,3 +1,6 @@
-aiomqtt
+gmqtt
+aiocoap
+LinkHeader
 aiosqlite
 pyyaml
+cryptography

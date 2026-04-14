@@ -2,20 +2,12 @@ import random
 import time
 
 def create_room(b_id, f_num, r_num, cfg, state=None):
-    if state:
-        return {
-            "id": f"{b_id}-{f_num:02d}-{r_num:03d}",
-            "path": f"bldg_{b_id}/floor_{f_num:02d}/room_{r_num:03d}",
-            "t": state['last_temp'],
-            "h": state['last_humidity'],
-            "m": state['hvac_mode'],
-            "tt": state['target_temp'],
-            "occ": False,
-            "l": 0,
-            "ts": int(time.time()),
-            "f": False
-        }
-    return {
+    protocol = "mqtt" if r_num <= cfg['simulation']['mqtt_rooms_per_floor'] else "coap"
+    coap_port = None
+    if protocol == "coap":
+        coap_port = 50000 + (f_num * 100) + r_num
+
+    r = {
         "id": f"{b_id}-{f_num:02d}-{r_num:03d}",
         "path": f"bldg_{b_id}/floor_{f_num:02d}/room_{r_num:03d}",
         "t": 22.0,
@@ -25,8 +17,16 @@ def create_room(b_id, f_num, r_num, cfg, state=None):
         "occ": False,
         "l": 0,
         "ts": int(time.time()),
-        "f": False
+        "f": False,
+        "protocol": protocol,
+        "coap_port": coap_port
     }
+    if state:
+        r["t"] = state.get('last_temp', 22.0)
+        r["h"] = state.get('last_humidity', 45.0)
+        r["m"] = state.get('hvac_mode', "OFF")
+        r["tt"] = state.get('target_temp', 22.0)
+    return r
 
 def get_pwr(m):
     if m == "ON": return 1.0

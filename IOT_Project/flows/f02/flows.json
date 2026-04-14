@@ -1,0 +1,82 @@
+[
+  {
+    "id": "mqtt-broker-f02",
+    "type": "mqtt-broker",
+    "name": "HiveMQ Backbone",
+    "broker": "hivemq",
+    "port": "1883",
+    "clientid": "gateway-f02",
+    "usetls": false,
+    "keepalive": "60",
+    "cleansession": true
+  },
+  {
+    "id": "mqtt-sub-f02",
+    "type": "mqtt in",
+    "name": "Floor f02 Telemetry",
+    "topic": "campus/b01/f02/+/telemetry",
+    "qos": "0",
+    "datatype": "json",
+    "broker": "mqtt-broker-f02",
+    "x": 150,
+    "y": 100,
+    "wires": [
+      [
+        "edge-thinning-f02"
+      ]
+    ]
+  },
+  {
+    "id": "edge-thinning-f02",
+    "type": "function",
+    "name": "60s Average Thinning",
+    "func": "// Averages data over 60 seconds (Mock)\nvar count = context.get('count') || 0;\nvar sum = context.get('sum') || 0;\nsum += msg.payload.sensors.temperature;\ncount += 1;\nif (count >= 60) {\n  var avg = sum/count;\n  context.set('count', 0);\n  context.set('sum', 0);\n  return {payload: {floor_avg_temp: avg}};\n}\nreturn null;",
+    "x": 400,
+    "y": 100,
+    "wires": [
+      [
+        "mqtt-pub-summary-f02"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt-pub-summary-f02",
+    "type": "mqtt out",
+    "name": "Publish Summary",
+    "topic": "campus/b01/f02/summary",
+    "qos": "0",
+    "retain": "",
+    "broker": "mqtt-broker-f02",
+    "x": 650,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "coap-req-f02",
+    "type": "coap request",
+    "name": "CoAP Observer (Example)",
+    "method": "GET",
+    "observe": true,
+    "url": "coap://host.docker.internal:50111/f01/r011/telemetry",
+    "content-format": "application/json",
+    "x": 150,
+    "y": 200,
+    "wires": [
+      [
+        "mqtt-pub-coap-translate-f02"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt-pub-coap-translate-f02",
+    "type": "mqtt out",
+    "name": "CoAP -> MQTT Bridge",
+    "topic": "campus/b01/f02/r011/telemetry",
+    "qos": "0",
+    "retain": "",
+    "broker": "mqtt-broker-f02",
+    "x": 400,
+    "y": 200,
+    "wires": []
+  }
+]
