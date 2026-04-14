@@ -1,5 +1,5 @@
 gmqtt
-aiocoap
+aiocoap[all]
 LinkHeader
 aiosqlite
 pyyaml

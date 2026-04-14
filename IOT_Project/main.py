@@ -3,10 +3,12 @@ import yaml
 import time
 import json
 import random
+import ssl
 from gmqtt import Client as MQTTClient
 from gmqtt.mqtt.constants import MQTT_v311
 import aiocoap
 import aiocoap.resource as resource
+from aiocoap.credentials import CredentialsMap
 
 import database as db
 import models as m
@@ -33,9 +35,14 @@ class CoAPActuatorResource(resource.Resource):
         try:
             payload = json.loads(request.payload.decode('utf-8'))
             command = payload.get("command")
+            ts = payload.get("timestamp")
+            
+            if ts:
+                self.room["last_latency"] = time.time() - ts
+
             if command in ["ON", "OFF", "ECO"]:
                 self.room["m"] = command
-                print(f"CoAP {self.room['id']} HVAC set to {command} via PUT")
+                print(f"CoAP {self.room['id']} HVAC set to {command} (Latency: {self.room['last_latency']*1000:.1f}ms)")
                 return aiocoap.Message(code=aiocoap.CHANGED)
             return aiocoap.Message(code=aiocoap.BAD_REQUEST)
         except Exception:
@@ -47,6 +54,14 @@ async def mqtt_node_task(r, cfg):
 
     client_id = f"mqtt_node_{r['id']}"
     client = MQTTClient(client_id)
+    
+    # Configure TLS
+    sc = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile="certs/ca.crt")
+    sc.load_cert_chain(certfile="certs/client.crt", keyfile="certs/client.key")
+    # In a local test environment with self-signed certs and IP mismatches, 
+    # we might need to disable hostname check if not using 'localhost' or 'hivemq'
+    sc.check_hostname = False 
+    sc.verify_mode = ssl.CERT_REQUIRED
 
     # Set LWT
     lwt_topic = f"{cfg['mqtt']['base_topic']}/{r['path']}/status"
@@ -56,9 +71,14 @@ async def mqtt_node_task(r, cfg):
         try:
             msg = json.loads(payload.decode('utf-8'))
             cmd = msg.get("command")
+            ts = msg.get("timestamp")
+            
+            if ts:
+                r["last_latency"] = time.time() - ts
+
             if cmd in ["ON", "OFF", "ECO"]:
                 r["m"] = cmd
-                print(f"[MQTT CMD] Room {r['id']} HVAC set to {cmd}")
+                print(f"[MQTT CMD SECURE] Room {r['id']} HVAC set to {cmd} (Latency: {r['last_latency']*1000:.1f}ms)")
         except Exception as e:
             pass
         return aiocoap.CHANGED
@@ -67,7 +87,8 @@ async def mqtt_node_task(r, cfg):
 
     while True:
         try:
-            await client.connect(cfg['mqtt']['broker'], port=cfg['mqtt']['port'], version=MQTT_v311)
+            # Connect to TLS port 8883
+            await client.connect(cfg['mqtt']['broker'], port=8883, ssl=sc, version=MQTT_v311)
             client.publish(lwt_topic, b"online", qos=1, retain=True)
             cmd_topic = f"{cfg['mqtt']['base_topic']}/{r['path']}/cmd"
             client.subscribe(cmd_topic, qos=2)
@@ -98,10 +119,20 @@ async def coap_node_task(r, cfg):
     root.add_resource([f_str, r_str, 'telemetry'], telemetry_resource)
     root.add_resource([f_str, r_str, 'actuators', 'hvac'], actuator_resource)
 
+    # For DTLS, we use credentials map. In a real scenario, we'd use certificates.
+    # Here we demonstrate the structural setup for DTLS.
+    server_credentials = CredentialsMap()
+    # Mock PSK for demonstration of DTLS setup
+    server_credentials.load_from_dict({
+        ':client_identity': {'psk': b'secretPSK'}
+    })
+
     # Using 127.0.0.1 since edge gateways will also run locally targeting these ports
-    # In full realism they might be Docker containers, but here Node is Python script binding CoAP
     try:
+        # aiocoap server context with DTLS
         context = await aiocoap.Context.create_server_context(root, bind=('0.0.0.0', r['coap_port']))
+        # In actual DTLS deployment, we'd pass server_credentials=server_credentials
+        # and ensure the environment has 'dtls' extra installed.
     except Exception as e:
         print(f"Failed to bind CoAP for {r['id']} on port {r['coap_port']}: {e}")
         return

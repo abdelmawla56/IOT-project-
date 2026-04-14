@@ -5,13 +5,22 @@
             <port>1883</port>
             <bind-address>0.0.0.0</bind-address>
         </tcp-listener>
+        <tls-tcp-listener>
+            <port>8883</port>
+            <bind-address>0.0.0.0</bind-address>
+            <tls>
+                <keystore>
+                    <path>/opt/hivemq/conf/certs/server.crt</path>
+                    <password>password</password> 
+                    <private-key-path>/opt/hivemq/conf/certs/server.key</private-key-path>
+                </keystore>
+            </tls>
+        </tls-tcp-listener>
     </listeners>
-    <!-- For full TLS, we would configure a tls-tcp-listener here. -->
-    
-    <!-- Demonstration of ACL Access Control for Floor Isolation -->
+
     <access-control>
-        <!-- In a real deployment with HiveMQ ESE, this would link to an external database -->
-        <!-- Or we load a custom extension. We document here the expected ACL structure. -->
-        <!-- Floor 01 nodes can only publish to campus/b01/f01/# -->
+        <mqtt-authentication>
+            <file-rbac></file-rbac>
+        </mqtt-authentication>
     </access-control>
 </hivemq>

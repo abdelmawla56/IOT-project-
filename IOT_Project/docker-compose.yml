@@ -8,6 +8,7 @@ services:
       - "8080:8080"
     volumes:
       - ./hivemq-conf:/opt/hivemq/conf
+      - ./certs:/opt/hivemq/conf/certs:ro
     networks:
       - iot_net
 

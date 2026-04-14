@@ -19,13 +19,15 @@ def create_room(b_id, f_num, r_num, cfg, state=None):
         "ts": int(time.time()),
         "f": False,
         "protocol": protocol,
-        "coap_port": coap_port
+        "coap_port": coap_port,
+        "last_latency": 0.0
     }
     if state:
         r["t"] = state.get('last_temp', 22.0)
         r["h"] = state.get('last_humidity', 45.0)
         r["m"] = state.get('hvac_mode', "OFF")
         r["tt"] = state.get('target_temp', 22.0)
+        r["last_latency"] = state.get('last_latency', 0.0)
     return r
 
 def get_pwr(m):
@@ -56,5 +58,6 @@ def get_payload(r):
     return {
         "metadata": {"sensor_id": r['id'], "timestamp": r['ts']},
         "sensors": {"temperature": round(r['t'], 2), "humidity": round(r['h'], 2), "occupancy": r['occ'], "light_level": 500 if r['occ'] else 50},
-        "actuators": {"hvac_mode": r['m']}
+        "actuators": {"hvac_mode": r['m']},
+        "metrics": {"latency_ms": round(r['last_latency'] * 1000, 2)}
     }
