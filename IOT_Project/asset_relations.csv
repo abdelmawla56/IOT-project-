@@ -1,0 +1,7 @@
+FromType,FromName,RelationType,ToType,ToName
+Asset,Campus,Contains,Asset,Building b01
+Asset,Building b01,Contains,Asset,Floor 01
+Asset,Floor 01,Contains,Asset,Room 01-001
+Asset,Room 01-001,Contains,Device,b01-f01-r001
+Asset,Floor 01,Contains,Asset,Room 01-002
+Asset,Room 01-002,Contains,Device,b01-f01-r002

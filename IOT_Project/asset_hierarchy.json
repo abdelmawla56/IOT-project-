@@ -1,0 +1,29 @@
+{
+    "Campus": {
+        "type": "Campus",
+        "children": {
+            "Building b01": {
+                "type": "Building",
+                "children": {
+                    "Floor 01": {
+                        "type": "Floor",
+                        "children": {
+                            "Room 01-001": {
+                                "type": "Room",
+                                "devices": [
+                                    "b01-f01-r001"
+                                ]
+                            },
+                            "Room 01-002": {
+                                "type": "Room",
+                                "devices": [
+                                    "b01-f01-r002"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
